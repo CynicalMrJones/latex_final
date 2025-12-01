@@ -1,2 +1,137 @@
 
+\documentclass[14pt]{extarticle}
+\usepackage[margin=1in]{geometry}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{lmodern}
+\usepackage{booktabs}
+\usepackage{multirow}
 
+\lstset{frame=tb,
+   language=Python,
+   aboveskip=3mm,
+   belowskip=3mm,
+   showstringspaces=false,
+   columns=flexible,
+   basicstyle={\small\ttfamily},
+   numbers=none,
+   numberstyle=\tiny\color{gray},
+   keywordstyle=\color{blue},
+   commentstyle=\color{dkgreen},
+   stringstyle=\color{mauve},
+   breaklines=true,
+   breakatwhitespace=true
+   tabsize=3
+   }
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+
+\title{Complex Parsing of Time Logs}
+\author{Jacob Jones}
+
+\begin{document}
+\maketitle
+\newpage
+\section{Abstract}
+This problem stems from a project assignment given by Dr. Weidong Xiong for Comparative Program Languages. This project involved a complex string parsing problem among many files. The parsing required retrieving a time interval found within a timelog file. A solution to this problem required the use of pattern recognition due to the big restriction of not using any python modules except for the sys module. The solution proposed runs within parameters and produces good output.
+\newpage
+\section{Introduction}
+This problem was a project assignment given by Dr. Weidong Xiong for Comparative Program Languages. The problem entailed parsing five given “time log” files into their respective time. Each file would produce an output in the form of hours and minutes to standard output. The format of these files differed slightly but followed the same principle. [Date] [Time Intervals] [Message] (e.g. 2/23/12: 9:10pm - 11:40pm getting familiar with Flash). A line like this should return a time of two hours and thirty minutes. Then the next time interval should be read and added to the total number of hours and minutes. Iterating like this until the end of the file is reached and a total number of hours and minutes is written to standard output. With how strong modern day programming languages have come, a solution to this problem could be solved simply, so a number of restrictions were put in place to inspire unique solutions. The restrictions were as follows…
+\begin{itemize}
+    \item The program must be written in the Python programming language
+    \item The program should report the line number if there is something wrong with the format of the time data in that line that your Python program cannot parse. We cannot assume that there will be a time data value in each line
+    \item Your program starts to count the time after it finds the hard-coded “Time Log:” (case insensitive, there is a space between Time and Log)
+    \item The “pm” and “am” should be case insensitive, i.e., 9:10pm or 9:10PM or 9:10pM or 9:10Pm are all valid time values.
+    \item The only Python module you can use in your source code is the “sys” module. Do NOT use other modules such as “re”, “datetime”, “pandas”, “numpy”, “dateparser”, etc.
+    \item We assume there will be no space within “9:10pm”
+    \item Please write a function “GetTimeValue” with appropriate parameters to parse the time value like “9:10pm”
+    \item Please write another function “GetTimePeriod” with appropriate parameters to parse the time period like “9:10pm - 11:40pm”. It will call the function “GetTimeValue” to parse the time values “9:10pm” and “11:40pm”.
+\end{itemize}
+\section{Methodology/Scheme/Algorithm Design}A problem such as this could be handled in a multitude of ways. Without the use of modules I was forced to handle string parsing in a creative way. The solution I found the most intuitive was to look for patterns in the time entries. I noticed that each entry was formatted as a date followed by a time then a message afterwards. With this knowledge my initial idea was to break down each file into a series of lines, iterate through each line until hitting a space. While doing this each character is added to a string named preprocess. At this point preprocess is a string containing just the date at the beginning. I could remove this substring from the current line then iterate again until hitting another space. This string would  be the first time given in the current line. I could then continue iteration until hitting another space which would be the second time given in the current line. These time would then be converted into military time so they could be subtracted to get a true time value between the two.\\ 
+
+\noindent This initial thought needed refinement. As per the restrictions listed above, some lines do not have any time intervals in them. This was done by adding new line characters into the message which is a real possibility in a real world scenario. Another issue is if the line has a time interval but no date associated with it. This would mean the file was opened then closed then reopened and reclosed on the same date. Converting to military times only partially fixes the issue of time conversions. The program also needs to be able to handle time changes from late night to early morning. An example would be the first time being 9:00am and the second being 9:00pm. Subtracting the two would yield zero hours which is incorrect. The true value is twenty-four hours.
+\newpage
+\section{Implementation with Findings}
+The first thing to implement was global variables that would be used in the program. 
+\lstinputlisting[language=Python, firstline=3, lastline=14]{tlparser.py}
+This imports the only module allowed in the project as well as initializes a totalCount global variable and a currentLine global string. The total count is going to be the final count of all the times added up and the currentLine variable is the line that needs to be parsed. We also open the file via a command line argument provided by the user. If no file is given the program exits with the message “Usage: parse input file”. If the file cannot be found it exits with the message “Could not open file”. Next is the getLine function which is in charge of getting the next line in the program for parsing. 
+
+\lstinputlisting[language=Python, firstline=38, lastline=41]{tlparser.py}
+This function takes in a file and clears the current line and replaces it with the next line in a sequence. Another important function is the truncate function. 
+\lstinputlisting[language=Python, firstline=44, lastline=46]{tlparser.py}
+This function looks strange only because of the module's restriction. Python only supports truncation of floats using their math library so I needed to get resourceful. This function essentially multiplies the given value by \(10^2\) and casts that number as an integer. This essentially moves the decimal place to the right twice, padding it with zeros. Then we divide that number by \(10^2\) which restores the number to the original value, effectively truncating it. The reason this is so important is because we do not want the python interpreter rounding the minutes of a given time. A number like 1.015 should translate to an hour and one minute. If python is allowed to round this number then it would be one hour and two minutes which would throw off the output. One of the required functions is GetTimeValue, which parses a time like 9:10pm and 11:40pm into two respective military times. 
+\lstinputlisting[language=Python, firstline=49, lastline=73]{tlparser.py}
+This function takes in a given time provided by GetTimePeriod. The first step is to break the time into two components. The actual time provided and if it is an “am” time or a “pm” time. To do this we check the last two characters of the time string. If it is “am” or “pm” then we set the variable “ap” to “am” or “pm”. Then we set a variable named “time part” to what comes before the last two characters. If “am” or “pm” are not in the time, then we append an ‘m’ to the end of the string and set it equal to “ap”. “Time part” is then set just like in the first example. The reason we need to append the ‘m’ at the end is due to how we parse the string and pass in the time. This will be explored later when talking about the GetTimePeriod function. We break down the time part into two variables, separating them by the colon that connects them, “hours” and “mins”. We also need to cast them as floats because they are currently strings. We then check to see if “ap” is set to “pm”. If it is then we check to see if hours are equal to twelve, if it is then we return the truncated hours and minutes. If not then we add twelve to the hours and return hours and minutes truncated again. This converts the time into military time and ignores if it's twelve pm because that is a valid military time. If the “ap” is set to “am” then we check to see if the hours is equal to 12 and if it is subtract twelve from hours then return truncated hours and minutes. Next is the GetTimePeriod function.
+\lstinputlisting[language=Python, firstline=76, lastline=120]{tlparser.py}
+This function is the most complex due to the heavy use of logic and loops, however it can be broken down into four simple procedures.
+\begin{enumerate}
+    \item Preprocess the string
+    \item Get the first time interval 
+    \item Get the second time interval 
+    \item Return the values differences in hours and minutes 
+\end{enumerate}
+For the first part we initialize three strings named preprocess, part1, and part2. Then we iterate through the string until reaching a space character. While doing this we add the character up until the space to the string preprocess. After reaching the space, we remove it from the current string. We also check to see if after the preprocess runs if it is empty. If it is then we remove the white space at the beginning. The second step is similar to the first where we iterate through the string until reaching a space character. Adding everything before the space to variable part1. Following the similar semantics we continue iterating through the string skipping over the ‘-’ character and adding it to part2. After that we run both numbers through GetTimeValue. The time values are returned to the function as a tuple in hours and minutes. We then convert the hours into minutes and combine with minutes to get a total number of minutes. Making sure to split them into a start time and an end time. After that we check to see if the end time is less than the start time. This would mean that a full day passed between the times, meaning we need to add twenty-four hours in the form of minutes. We can then pass this value to the main function. 
+\lstinputlisting[language=Python, firstline=17, lastline=35]{tlparser.py}
+This is the main driver of the program and is in charge of calculating the total number of hours and minutes. First we run getLine in order to get the first line of the file. Then we keep getting the next line until we hit the “time log:”. This is in compliance with the restriction listed above. Once we hit that value, we keep getting the next line until the line is blank. Each line is then passed through GetTimePeriod in order to get the final number in terms of minutes in that specific line. We then add those numbers to a totalCount variable. We then split the total into hours and minutes. After all the lines have been read in we print to standard out the in terms of hours and minutes.
+\newpage
+\section{Time Complexities}
+The efficiency of these functions are a bit hard to judge due to the nature of loops within the program. Initial thinking leads me to believe that the worst case is \(O(n^3)\), due to the three for loops. However the loops are not nested meaning each loop runs independently of each other. The only thing that changes is the input string that is being run on. This means that each loop is only \(O(n)\), and when judging the notation of a function, we take the highest order, in this case \(O(n)\).\\ 
+Worst Case: \(O(n)\)\\
+Average Case:\(O(n)\)\\
+Best Case: \(O(n)\)\\
+\section{Timed Examples}
+To test efficiency of this program, I used the “time” application found within most linux distributions. This application runs a given program and returns the real time, the user time, and the system time (INSERT MAN PAGES CITATION). The real time is the real world seconds used. The user time is the real time that was used by that specific linux user, and the system time is the amount of CPU time used for this application. 
+% Table one
+\begin{table}[h]
+\begin{center}
+    \begin{center}
+        File size: 4.6kb
+    \end{center}
+    \begin{tabular}{|c|c|c|}
+        \toprule
+        Real time & User time & Sys time\\
+        \midrule
+        0m0.016s & 0m0.008s & 0m0.007s\\
+        \bottomrule
+    \end{tabular}
+    \\
+\end{center}
+\end{table}
+
+% Table two
+\begin{table}[h]
+\begin{center}
+    \begin{center}
+        File size: 248Mb
+    \end{center}
+    \begin{tabular}{|c|c|c|}
+        \toprule
+        Real time & User time & Sys time\\
+        \midrule
+        0m10.373s & 0m10.350s & 0m0.018s\\
+        \bottomrule
+    \end{tabular}
+\end{center}
+\end{table}
+
+% Table two
+\begin{table}[h]
+\begin{center}
+    \begin{center}
+        File size: 1.3Gb
+    \end{center}
+    \begin{tabular}{|c|c|c|}
+        \toprule
+        Real time & User time & Sys time\\
+        \midrule
+        0m53.572s & 0m53.465s & 0m0.101s\\
+        \bottomrule
+    \end{tabular}
+    \\
+\end{center}
+\end{table}
+\section{Conclusion}
+When dealing with string parsing, there are many ways to handle a complex problem such as this. The solution proposed runs within the parameters of the project and performs well when outside of established parameters. It is also structured in a way that makes future modifications straightforward, allowing additional formats or edge cases to be incorporated with minimal disruption. Overall, the approach provides a reliable balance between simplicity, flexibility, and performance.
+\end{document}
