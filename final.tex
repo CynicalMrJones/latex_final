@@ -6,6 +6,11 @@
 \usepackage{lmodern}
 \usepackage{booktabs}
 \usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{csquotes}
+\usepackage[utf8]{inputenc}
+\usepackage[backend=biber]{biblatex}
+\addbibresource{source.bib}
 
 \lstset{frame=tb,
    language=Python,
@@ -35,7 +40,7 @@
 \maketitle
 \newpage
 \section{Abstract}
-This problem stems from a project assignment given by Dr. Weidong Xiong for Comparative Program Languages. This project involved a complex string parsing problem among many files. The parsing required retrieving a time interval found within a timelog file. A solution to this problem required the use of pattern recognition due to the big restriction of not using any python modules except for the sys module. The solution proposed runs within parameters and produces good output.
+This problem stems from a project assignment given by Dr. Weidong Xiong for Comparative Program Languages\cite{proj3}. This project involved a complex string parsing problem among many files. The parsing required retrieving a time interval found within a timelog file. A solution to this problem required the use of pattern recognition due to the big restriction of not using any python modules except for the sys module. The solution proposed runs within parameters and produces good output.
 \newpage
 \section{Introduction}
 This problem was a project assignment given by Dr. Weidong Xiong for Comparative Program Languages. The problem entailed parsing five given “time log” files into their respective time. Each file would produce an output in the form of hours and minutes to standard output. The format of these files differed slightly but followed the same principle. [Date] [Time Intervals] [Message] (e.g. 2/23/12: 9:10pm - 11:40pm getting familiar with Flash). A line like this should return a time of two hours and thirty minutes. Then the next time interval should be read and added to the total number of hours and minutes. Iterating like this until the end of the file is reached and a total number of hours and minutes is written to standard output. With how strong modern day programming languages have come, a solution to this problem could be solved simply, so a number of restrictions were put in place to inspire unique solutions. The restrictions were as follows…
@@ -82,7 +87,7 @@ Worst Case: \(O(n)\)\\
 Average Case:\(O(n)\)\\
 Best Case: \(O(n)\)\\
 \section{Timed Examples}
-To test efficiency of this program, I used the “time” application found within most linux distributions. This application runs a given program and returns the real time, the user time, and the system time (INSERT MAN PAGES CITATION). The real time is the real world seconds used. The user time is the real time that was used by that specific linux user, and the system time is the amount of CPU time used for this application. 
+To test efficiency of this program, I used the “time” application found within most linux distributions. This application runs a given program and returns the real time, the user time, and the system time \cite{time}. The real time is the real world seconds used. The user time is the real time that was used by that specific linux user, and the system time is the amount of CPU time used for this application. 
 % Table one
 \begin{table}[h]
 \begin{center}
@@ -116,7 +121,7 @@ To test efficiency of this program, I used the “time” application found with
 \end{center}
 \end{table}
 
-% Table two
+% Table Three 
 \begin{table}[h]
 \begin{center}
     \begin{center}
@@ -132,6 +137,21 @@ To test efficiency of this program, I used the “time” application found with
     \\
 \end{center}
 \end{table}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[totalheight=3in]{Chart.eps}
+    \caption{Time vs File Size (Kilobytes)}
+    \label{fig: graph}
+    Equations:
+    Real time: \(3.78 * 10^6 x + 4.58\)\\
+    User time: \(3.76 * 10^6 x + 4.62\)\\
+    System time: \(6.88 * 10^9 x + 0.0116\)
+\end{figure}
+
+
 \section{Conclusion}
 When dealing with string parsing, there are many ways to handle a complex problem such as this. The solution proposed runs within the parameters of the project and performs well when outside of established parameters. It is also structured in a way that makes future modifications straightforward, allowing additional formats or edge cases to be incorporated with minimal disruption. Overall, the approach provides a reliable balance between simplicity, flexibility, and performance.
+\newpage
+\printbibliography
 \end{document}
